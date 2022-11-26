@@ -17,6 +17,7 @@ from typing import List
 
 from bs4 import BeautifulSoup
 import pandas as pd
+from tqdm import tqdm
 
 
 def get_7cups_profile(username: str):
@@ -30,8 +31,8 @@ def get_7cups_profile(username: str):
 
     # data_dfs[0:3] are attribute key-value pairs
     df = pd.concat(data_dfs[:3])
-    # data_dfs[3] contains Categories
-    categories = data_dfs[3].index.tolist()[1:]
+    # data_dfs[3] contains Categories but not every Listener configures that
+    categories = data_dfs[3].index.tolist()[1:] if len(data_dfs) == 4 else []
 
     data_row = df.transpose()
     data_row["Username"] = username
@@ -41,7 +42,7 @@ def get_7cups_profile(username: str):
 
 def get_7cups_profiles_from_list(usernames: List[str]):
     rows = []
-    for username in usernames:
+    for username in tqdm(usernames):
         rows.append(get_7cups_profile(username))
     df = pd.concat(rows)
     df = df.reset_index(drop=True)
@@ -51,7 +52,11 @@ def get_7cups_profiles_from_list(usernames: List[str]):
 if __name__ == "__main__":
     user_file = "/Users/shanglinghsu/Library/CloudStorage/OneDrive-GeorgiaInstituteofTechnology/7 Cups Participants.xlsx"
     # I added extra rows in my sheet for other info. You may not need this.
-    num_participants = 20
-    user_df = pd.read_excel(user_file)[:num_participants]
+    user_df = pd.read_excel(user_file)
+
+    user_df = user_df[user_df["Username"].notna()]
+    user_df = user_df[user_df["Category Chosen"].notna()]
+    user_df.reset_index(inplace=True, drop=True)
+    
     df = get_7cups_profiles_from_list(user_df["Username"])
     df.to_csv("profiles.csv")
