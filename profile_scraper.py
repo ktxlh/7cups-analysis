@@ -55,7 +55,7 @@ if __name__ == "__main__":
     user_df = pd.read_excel(user_file)
 
     user_df = user_df[user_df["Username"].notna()]
-    user_df = user_df[user_df["Category Chosen"].notna()]
+    user_df = user_df[user_df["scrape_profile"].notna()]
     user_df.reset_index(inplace=True, drop=True)
     
     df = get_7cups_profiles_from_list(user_df["Username"])
